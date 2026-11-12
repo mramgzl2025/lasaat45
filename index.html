@@ -239,7 +239,7 @@ addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'
 function sendState(){try{if(ch&&online)ch.send({type:'broadcast',event:'state',payload:G})}catch(e){}}
 function tMsg(m){try{chime()}catch(e){}document.querySelectorAll('.tmsg').forEach(x=>x.remove());const d=document.createElement('div');d.className='tmsg';d.setAttribute('role','alert');d.innerHTML='<span style="font-size:1.6rem">👩‍🏫</span><div><small style="display:block;opacity:.85;font-size:.8rem">رسالة من المعلمة</small>'+esc(m.t)+'</div><button aria-label="إغلاق">✕</button>';d.querySelector('button').onclick=()=>d.remove();document.body.appendChild(d);setTimeout(()=>d.remove(),15000)}
 function gotMsg(m){if(addMsg(G,m)){LS.set('st_'+roomId(),G);renderChat();if(m.tch)tMsg(m)}}
-function joinRoom(){peekClose();CONF=[];
+let SHOWLIST=false;function joinRoom(){peekClose();CONF=[];SHOWLIST=true;
  G=LS.get('st_'+roomId(),blank());norm();JOIN_AT=Date.now();view='room';
  if(!isC()&&!G.mem[P.n])G.mem[P.n]=JOIN_AT;
  if(!SB){render();return}
@@ -319,9 +319,9 @@ function barHTML(){const t=LESSONS[P.l].teams[P.g-1];return '<div class="who2">'
 let EXQ=0;function renderBar(){const el=document.getElementById('rbar');if(el)el.innerHTML=barHTML()}
 function vRoom(){const L=LESSONS[P.l];theme(L);
  let h='<div class="rbar" id="rbar">'+barHTML()+'</div>'+hero(L)+'<section class="card" id="mem">'+memAll()+'</section>';
- if(G.part==null){
+ if(G.part==null||SHOWLIST){
   const tot=Object.values(G.done).reduce((a,b)=>a+b,0),max=L.parts.reduce((a,p)=>a+PM(p),0);
-  h+='<section class="card"><div class="row" style="justify-content:space-between"><h2 class="sec">أنشطة الدرس</h2><span class="status on" style="background:#eef3f1;color:var(--ink)">درجة المجموعة: '+AR(tot)+' من '+AR(max)+'</span></div>'+progHTML()+'<p class="muted">اختاروا نشاطًا معًا، وسيفتح عند كل أعضاء المجموعة.</p><div class="parts">'+L.parts.map((p,i)=>{const d=G.done[i];return '<button class="part'+(d!=null?' done':'')+'" style="--pc:'+p.color+'" data-p="'+i+'"><span class="e">'+p.e+'</span><small>'+NN(i)+'</small><b>'+p.t+'</b><small>'+(d!=null?'✓ '+AR(d)+' من '+AR(PM(p)):AR(PM(p))+' درجات')+'</small></button>'}).join('')+'</div></section>';
+  h+='<section class="card"><div class="row" style="justify-content:space-between"><h2 class="sec">أنشطة الدرس</h2><span class="status on" style="background:#eef3f1;color:var(--ink)">درجة المجموعة: '+AR(tot)+' من '+AR(max)+'</span></div>'+progHTML()+(G.part!=null?'<div class="fb no" style="background:#fff7e0;color:#7a5200">✏️ مجموعتك تحل الآن: <b>'+L.parts[G.part].t+'</b>. اضغطي عليه للدخول معهم، أو اختاري نشاطًا آخر.</div>':'')+'<p class="muted">اختاري النشاط اللي تبين تبدئين فيه، وسيفتح عند كل أعضاء المجموعة.</p><div class="parts">'+L.parts.map((p,i)=>{const d=G.done[i];return '<button class="part'+(d!=null?' done':'')+'" style="--pc:'+p.color+'" data-p="'+i+'"><span class="e">'+p.e+'</span><small>'+NN(i)+'</small><b>'+p.t+'</b><small>'+(d!=null?'✓ '+AR(d)+' من '+AR(PM(p)):AR(PM(p))+' درجات')+'</small></button>'}).join('')+'</div></section>';
   h+='<section class="card" id="rank">'+rankHTML()+'</section>';
   h+='<section class="card" id="chat">'+chatHTML()+'</section>'}
  else h+=vPart()+'<section class="card" id="chat">'+chatHTML()+'</section>';
@@ -523,7 +523,7 @@ root.addEventListener('click',e=>{
  if('send' in d){const e=document.getElementById('chatin'),v=(e&&e.value||'').trim();if(!v)return;const m={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),n:isC()?'جهاز المجموعة':P.n,t:v.slice(0,200),at:Date.now(),tch:0};e.value='';addMsg(G,m);LS.set('st_'+roomId(),G);try{ch&&online&&ch.send({type:'broadcast',event:'msg',payload:m})}catch(_){}renderChat();e.focus();return}
  if(d.turn!=null&&isC()){G.turn=+d.turn;G.turnAt=stamp();commit();renderMembers();toast('🎯 الدور الآن على '+first(P.m[G.turn]));return}
  if('help' in d){G.help=G.help&&Date.now()-G.help<15*60000?0:Date.now();G.helpAt=stamp();commit();renderMembers();toast(G.help?'✋ وصل طلبكم للمعلمة':'تم إلغاء طلب المساعدة');return}
- if(d.p!=null){const k=+d.p;G.part=k;G.partAt=stamp();if(G.done[k]==null&&!G.pst[k])G.pst[k]=Date.now();commit();render(true);return}
+ if(d.p!=null){const k=+d.p;SHOWLIST=false;G.part=k;G.partAt=stamp();if(G.done[k]==null&&!G.pst[k])G.pst[k]=Date.now();commit();render(true);return}
  if('list' in d){G.part=null;G.partAt=stamp();commit();render(true);return}
  const i=G.part;if(i==null)return;const L=LESSONS[P.l],p=L.parts[i],a=A();
  const isLead=isC()||leaderName()===P.n;
