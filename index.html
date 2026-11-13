@@ -556,8 +556,8 @@ root.addEventListener('click',e=>{
  if('send' in d){const e=document.getElementById('chatin'),v=(e&&e.value||'').trim();if(!v)return;const m={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),n:isC()?'جهاز المجموعة':P.n,t:v.slice(0,200),at:Date.now(),tch:0};e.value='';addMsg(G,m);LS.set('st_'+roomId(),G);try{ch&&online&&ch.send({type:'broadcast',event:'msg',payload:m})}catch(_){}renderChat();e.focus();return}
  if(d.turn!=null&&isC()){G.turn=+d.turn;G.turnAt=stamp();commit();renderMembers();toast('🎯 الدور الآن على '+first(P.m[G.turn]));return}
  if('help' in d){G.help=G.help&&Date.now()-G.help<15*60000?0:Date.now();G.helpAt=stamp();commit();renderMembers();toast(G.help?'✋ وصل طلبكم للمعلمة':'تم إلغاء طلب المساعدة');return}
- if(d.p!=null){const k=+d.p;SHOWLIST=false;G.part=k;G.partAt=stamp();if(G.done[k]==null&&!G.pst[k])G.pst[k]=Date.now();commit();render(true);return}
- if('list' in d){G.part=null;G.partAt=stamp();commit();render(true);return}
+ if(d.p!=null){const k=+d.p;SHOWLIST=false;G.part=k;G.partAt=stamp();if(G.done[k]==null&&G.pst[k]&&tOver(k)&&!Object.keys(G.ans[k]||{}).length){G.rtAt[k]=stamp();clean(G)}if(G.done[k]==null&&!G.pst[k])G.pst[k]=stamp();commit();render(true);return}
+ if('list' in d){const k=G.part;let rs=false;if(k!=null&&G.done[k]==null&&G.pst[k]&&!Object.keys(G.ans[k]||{}).length){G.rtAt[k]=stamp();clean(G);rs=true}G.part=null;G.partAt=stamp();commit();render(true);if(rs)toast('↩ ما بدأتنّ الحل، فوقت النشاط يرجع من جديد لما تدخلنه');return}
  const i=G.part;if(i==null)return;const L=LESSONS[P.l],p=L.parts[i],a=A();
  const isLead=isC()||leaderName()===P.n;
  if('retry' in d){if(!isLead){toast('إعادة المحاولة للقائدة فقط 👑');return}G.rtAt[i]=stamp();clean(G);G.ans[i]={};G.pst[i]=stamp();commit();render();return}
